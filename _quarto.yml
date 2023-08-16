@@ -1,5 +1,16 @@
 project:
   title: "methods-meetup"
+  output-dir: docs
 
+format:
+  revealjs:
+    theme: [default, theme.scss]
+    code-overflow: wrap
+    code-line-numbers: false
+    highlight-style: a11y
+    knitr:
+      opts_chunk:
+        dev: ragg_png
+        dpi: 144
 
 
