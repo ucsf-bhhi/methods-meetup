@@ -1,6 +1,8 @@
 ---
 title: "Replicate Weights"
+subtitle: "Session 1 - Methods Meetup"
 author: "Eve Perry"
+date: today
 format: revealjs
 ---
 
