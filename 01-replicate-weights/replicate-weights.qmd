@@ -1,9 +1,11 @@
 ---
 title: "Replicate Weights"
-subtitle: "Session 1 - Methods Meetup"
+subtitle: "Methods Meetup: Session 1"
 author: "Eve Perry"
 date: today
-format: revealjs
+format: 
+  revealjs:
+    footer: "BHHI Methods Meetup Session 1: Replicate Weights"
 ---
 
 ```{r}
@@ -23,6 +25,10 @@ set.seed(510)
 # Complex Sampling Recap
 
 ## Sampling Designs {.smaller}
+
+::: {.r-stack}
+
+::: {.fragment .fade-out}
 
 ::: columns
 ::: column
@@ -44,7 +50,9 @@ set.seed(510)
 :::
 :::
 
-## Sampling Designs
+:::
+
+::: {.fragment .fade-in-then-out}
 
 ::: columns
 ::: column
@@ -152,6 +160,10 @@ ggplot() +
 :::
 :::
 
+:::
+
+:::
+
 ## Standard Error Formulas
 
 ::: columns
@@ -198,7 +210,7 @@ $$
 * Sampled without replacement and unequal probabilities
 * Simulate the sampling procedure many (10,000-100,000) times to get the probability a given county and venue are selected
 
-![](img/placer-venue-probabilities.png)
+![](img/placer-venue-probabilities.png){width=80%}
 :::
 
 ::: column
@@ -210,14 +222,15 @@ $$
 
 ::::
 
-## R Implementation
+## R: Packages
 
 * Relies on [`survey`](https://r-survey.r-forge.r-project.org/survey/) and [`svrep`](https://bschneidr.github.io/svrep/) packages
   * `survey` is the R workhorse for survey data analysis
   * `svrep` is the only package which supports multi-stage, unequal probability sampling without replacement and large fractions of population
 * Code available on the [on-prem (git.ucsf.edu) GitHub](https://git.ucsf.edu/Benioff-Homelessness-Housing-Initiative/statewide-survey-data-processing/blob/main/R/replicate_weights.R)
 
-## R Implementation
+## R: Code {.smaller}
+
 ```r
 design_object <- svydesign(
   ids = ~ county + venue_2 + record_id,
@@ -244,7 +257,7 @@ replicate_weights_design <- as_bootstrap_design(
 * Estimate statistic of interest using main weights and each set of replicate weights
 * Standard error comes from the variability of the replicate estimates with respect to the main weight estimate
 
-## R
+## R: Data Setup
 
 ```{r}
 #| cache: true
@@ -262,7 +275,8 @@ surveys = bhhi_shared_drive(
   mutate(across(where(is.labelled), as_factor))
 ```
 
-## R
+## R: Survey Setup
+
 ```{r}
 #| echo: true
 library(survey)
@@ -277,20 +291,23 @@ survey_object = svrepdesign(
 )
 ```
 
-## R
+## R: Chi-square Test
+
 ```{r}
 #| echo: true
 svychisq(~ physicalvio_thisep_recode + race_7cat, survey_object)
 ```
 
-## R {.smaller}
+## R: Regression {.smaller}
+
 ```{r}
 #| echo: true
 #| cache: true
 svyglm(episode_length ~ race_7cat, survey_object)
 ```
 
-## R
+## R: Group Means
+
 ```{r}
 #| echo: true
 library(srvyr)
@@ -301,8 +318,9 @@ survey_object %>%
   summarise(survey_mean(episode_length, na.rm = TRUE))
 ```
 
-## Stata {.smaller}
-```stata
+## Stata: Setup {.smaller}
+
+```stata 
 use "${bhhi_shared_drive}/statewide_survey_processed_data/latest/statewide_survey_processed.dta"
 
 keep if survey_count == 1
@@ -324,7 +342,8 @@ Bootstrap weights: academic_rep_weight_1 .. academic_rep_weight_100
             FPC 1: <zero>
 ```
 
-## Stata {.smaller}
+## Stata: Regression  {.smaller}
+
 ```stata
 svy bootstrap : reg episode_length i.race_7cat
 ```
@@ -360,7 +379,8 @@ NH Native American/Alaskan  |   9.246603   5.991962     1.54   0.123    -2.49742
 ---------------------------------------------------------------------------------------------
 ```
 
-## Stata {.smaller}
+## Stata: Group Means {.smaller}
+
 ```stata
 svy bootstrap : mean episode_length, over(race_7cat)
 ```
@@ -391,3 +411,16 @@ NH Native American/Alaskan  |   49.61262   5.600275      38.63629    60.58896
                   NH Other  |   56.28201   15.18007      26.52963    86.03439
 -----------------------------------------------------------------------------
 ```
+
+# Questions and Discussion
+
+## Additional Resources {visibility="uncounted" .smaller}
+
+* [Stata Manual: Bootstrap Replicate Weights](https://www.stata.com/manuals/svysvybootstrap.pdf)
+* [R `survey` Package](https://r-survey.r-forge.r-project.org/survey/example-svrepdesign1.html)
+* [IPUMS: Replicate Weights in the ACS](https://usa.ipums.org/usa/repwt.shtml)
+* [Sharon Lohr: Sampling Design and Analysis](https://galoisian.files.wordpress.com/2018/11/sharon-l-lohr-sampling_-design-and-analysis-1999-duxbury-press.pdf)
+* [R `svrep` Package](https://bschneidr.github.io/svrep/)
+* [Beaumont and Emond (2022): A Bootstrap Variance Estimation Method for Multistage Sampling and Two-Phase Sampling When Poisson Sampling Is Used at the Second Phase](http://mdpi.com/2571-905X/5/2/19)
+* [Rao, Wu, Yue (1992): Some Recent Work on Resampling Methods for Complex Surveys](https://www150.statcan.gc.ca/n1/en/pub/12-001-x/1992002/article/14486-eng.pdf?st=HofYV8gm)
+
