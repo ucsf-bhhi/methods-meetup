@@ -11,14 +11,7 @@
     "href": "01-replicate-weights/replicate-weights.html#sampling-designs",
     "title": "Replicate Weights",
     "section": "Sampling Designs",
-    "text": "Sampling Designs\n\n\nSimple Random\n\nOnly 1 level\nEach observation has same chance of selection\nSample is often very small relative to population\n\n\nCASPEH\n\n3 levels: county, venue, individual\nAll sampled without replacement\nCounties and venues sampled with unequal probability\nIndividuals sampled with equal probability\nLarge fractions of populations sampled"
-  },
-  {
-    "objectID": "01-replicate-weights/replicate-weights.html#sampling-designs-1",
-    "href": "01-replicate-weights/replicate-weights.html#sampling-designs-1",
-    "title": "Replicate Weights",
-    "section": "Sampling Designs",
-    "text": "Sampling Designs\n\n\nSimple Random\n\n\n\n\n\n\nCASPEH"
+    "text": "Sampling Designs\n\n\n\n\nSimple Random\n\nOnly 1 level\nEach observation has same chance of selection\nSample is often very small relative to population\n\n\nCASPEH\n\n3 levels: county, venue, individual\nAll sampled without replacement\nCounties and venues sampled with unequal probability\nIndividuals sampled with equal probability\nLarge fractions of populations sampled\n\n\n\n\n\n\n\nSimple Random\n\n\n\n\n\n\nCASPEH"
   },
   {
     "objectID": "01-replicate-weights/replicate-weights.html#standard-error-formulas",
@@ -49,18 +42,18 @@
     "text": "Selection Probabilities\n\n\nCounties & Venues\n\nSampled without replacement and unequal probabilities\nSimulate the sampling procedure many (10,000-100,000) times to get the probability a given county and venue are selected\n\n\n\nIndividuals\n\nSimple random sample at venue\nAdjustments for individual non-response\nAdjustments for RDS inclusion"
   },
   {
-    "objectID": "01-replicate-weights/replicate-weights.html#r-implementation",
-    "href": "01-replicate-weights/replicate-weights.html#r-implementation",
+    "objectID": "01-replicate-weights/replicate-weights.html#r-packages",
+    "href": "01-replicate-weights/replicate-weights.html#r-packages",
     "title": "Replicate Weights",
-    "section": "R Implementation",
-    "text": "R Implementation\n\nRelies on survey and svrep packages\n\nsurvey is the R workhorse for survey data analysis\nsvrep is the only package which supports multi-stage, unequal probability sampling without replacement and large fractions of population\n\nCode available on the on-prem (git.ucsf.edu) GitHub"
+    "section": "R: Packages",
+    "text": "R: Packages\n\nRelies on survey and svrep packages\n\nsurvey is the R workhorse for survey data analysis\nsvrep is the only package which supports multi-stage, unequal probability sampling without replacement and large fractions of population\n\nCode available on the on-prem (git.ucsf.edu) GitHub"
   },
   {
-    "objectID": "01-replicate-weights/replicate-weights.html#r-implementation-1",
-    "href": "01-replicate-weights/replicate-weights.html#r-implementation-1",
+    "objectID": "01-replicate-weights/replicate-weights.html#r-code",
+    "href": "01-replicate-weights/replicate-weights.html#r-code",
     "title": "Replicate Weights",
-    "section": "R Implementation",
-    "text": "R Implementation\ndesign_object &lt;- svydesign(\n  ids = ~ county + venue_2 + record_id,\n  probs = ~ county_probability + venue_probability + final_individual_probability,\n  fpc = ~ county_probability + venue_probability + final_individual_probability,\n  pps = \"brewer\",\n  data = design_data\n)\n\noptions(list(survey.lonely.psu = \"adjust\", survey.replicates.mse = TRUE))\nreplicate_weights_design &lt;- as_bootstrap_design(\n  design = design_object,\n  replicates = 100,\n  type = \"Rao-Wu-Yue-Beaumont\",\n  mse = TRUE,\n  samp_method_by_stage = c(\"PPSWOR\", \"PPSWOR\", \"SRSWOR\")\n)"
+    "section": "R: Code",
+    "text": "R: Code\ndesign_object &lt;- svydesign(\n  ids = ~ county + venue_2 + record_id,\n  probs = ~ county_probability + venue_probability + final_individual_probability,\n  fpc = ~ county_probability + venue_probability + final_individual_probability,\n  pps = \"brewer\",\n  data = design_data\n)\n\noptions(list(survey.lonely.psu = \"adjust\", survey.replicates.mse = TRUE))\nreplicate_weights_design &lt;- as_bootstrap_design(\n  design = design_object,\n  replicates = 100,\n  type = \"Rao-Wu-Yue-Beaumont\",\n  mse = TRUE,\n  samp_method_by_stage = c(\"PPSWOR\", \"PPSWOR\", \"SRSWOR\")\n)"
   },
   {
     "objectID": "01-replicate-weights/replicate-weights.html#conceptual-recap",
@@ -70,66 +63,73 @@
     "text": "Conceptual Recap\n\nEstimate statistic of interest using main weights and each set of replicate weights\nStandard error comes from the variability of the replicate estimates with respect to the main weight estimate"
   },
   {
-    "objectID": "01-replicate-weights/replicate-weights.html#r",
-    "href": "01-replicate-weights/replicate-weights.html#r",
+    "objectID": "01-replicate-weights/replicate-weights.html#r-data-setup",
+    "href": "01-replicate-weights/replicate-weights.html#r-data-setup",
     "title": "Replicate Weights",
-    "section": "R",
-    "text": "R\n\nlibrary(bhhitools)\nlibrary(dplyr)\nlibrary(readr)\nlibrary(haven)\n\nsurveys = bhhi_shared_drive(\n  \"statewide_survey_processed_data/latest/statewide_survey_processed.rds\"\n) %&gt;% \n  read_rds() %&gt;% \n  filter(zap_labels(survey_count) == 1) %&gt;% \n  mutate(across(where(is.labelled), as_factor))"
+    "section": "R: Data Setup",
+    "text": "R: Data Setup\n\nlibrary(bhhitools)\nlibrary(dplyr)\nlibrary(readr)\nlibrary(haven)\n\nsurveys = bhhi_shared_drive(\n  \"statewide_survey_processed_data/latest/statewide_survey_processed.rds\"\n) %&gt;% \n  read_rds() %&gt;% \n  filter(zap_labels(survey_count) == 1) %&gt;% \n  mutate(across(where(is.labelled), as_factor))"
   },
   {
-    "objectID": "01-replicate-weights/replicate-weights.html#r-1",
-    "href": "01-replicate-weights/replicate-weights.html#r-1",
+    "objectID": "01-replicate-weights/replicate-weights.html#r-survey-setup",
+    "href": "01-replicate-weights/replicate-weights.html#r-survey-setup",
     "title": "Replicate Weights",
-    "section": "R",
-    "text": "R\n\nlibrary(survey)\n\nsurvey_object = svrepdesign(\n  ids = ~ record_id,\n  weights = ~ academic_weight,\n  repweights = \"academic_rep_weight*\",\n  type = \"bootstrap\",\n  mse = TRUE,\n  data = surveys\n)"
+    "section": "R: Survey Setup",
+    "text": "R: Survey Setup\n\nlibrary(survey)\n\nsurvey_object = svrepdesign(\n  ids = ~ record_id,\n  weights = ~ academic_weight,\n  repweights = \"academic_rep_weight*\",\n  type = \"bootstrap\",\n  mse = TRUE,\n  data = surveys\n)"
   },
   {
-    "objectID": "01-replicate-weights/replicate-weights.html#r-2",
-    "href": "01-replicate-weights/replicate-weights.html#r-2",
+    "objectID": "01-replicate-weights/replicate-weights.html#r-chi-square-test",
+    "href": "01-replicate-weights/replicate-weights.html#r-chi-square-test",
     "title": "Replicate Weights",
-    "section": "R",
-    "text": "R\n\nsvychisq(~ physicalvio_thisep_recode + race_7cat, survey_object)\n\n\n    Pearson's X^2: Rao & Scott adjustment\n\ndata:  svychisq(~physicalvio_thisep_recode + race_7cat, survey_object)\nF = 3.016, ndf = 7.3667, ddf = 729.3069, p-value = 0.003307"
+    "section": "R: Chi-square Test",
+    "text": "R: Chi-square Test\n\nsvychisq(~ physicalvio_thisep_recode + race_7cat, survey_object)\n\n\n    Pearson's X^2: Rao & Scott adjustment\n\ndata:  svychisq(~physicalvio_thisep_recode + race_7cat, survey_object)\nF = 3.016, ndf = 7.3667, ddf = 729.3069, p-value = 0.003307"
   },
   {
-    "objectID": "01-replicate-weights/replicate-weights.html#r-3",
-    "href": "01-replicate-weights/replicate-weights.html#r-3",
+    "objectID": "01-replicate-weights/replicate-weights.html#r-regression",
+    "href": "01-replicate-weights/replicate-weights.html#r-regression",
     "title": "Replicate Weights",
-    "section": "R",
-    "text": "R\n\nsvyglm(episode_length ~ race_7cat, survey_object)\n\nCall: svrepdesign.default(ids = ~record_id, weights = ~academic_weight, \n    repweights = \"academic_rep_weight*\", type = \"bootstrap\", \n    mse = TRUE, data = surveys)\nSurvey bootstrap with 100 replicates and MSE variances.\n\nCall:  svyglm(formula = episode_length ~ race_7cat, survey_object)\n\nCoefficients:\n                        (Intercept)                    race_7catNH White  \n                             40.366                                9.158  \n                  race_7catNH Black                     race_7catNH AAPI  \n                             -2.819                               16.096  \nrace_7catNH Native American/Alaskan              race_7catNH Multiracial  \n                              9.247                               -2.846  \n                  race_7catNH Other  \n                             15.916  \n\nDegrees of Freedom: 3139 Total (i.e. Null);  93 Residual\n  (59 observations deleted due to missingness)\nNull Deviance:      11750000 \nResidual Deviance: 11650000     AIC: 35910"
+    "section": "R: Regression",
+    "text": "R: Regression\n\nsvyglm(episode_length ~ race_7cat, survey_object)\n\nCall: svrepdesign.default(ids = ~record_id, weights = ~academic_weight, \n    repweights = \"academic_rep_weight*\", type = \"bootstrap\", \n    mse = TRUE, data = surveys)\nSurvey bootstrap with 100 replicates and MSE variances.\n\nCall:  svyglm(formula = episode_length ~ race_7cat, survey_object)\n\nCoefficients:\n                        (Intercept)                    race_7catNH White  \n                             40.366                                9.158  \n                  race_7catNH Black                     race_7catNH AAPI  \n                             -2.819                               16.096  \nrace_7catNH Native American/Alaskan              race_7catNH Multiracial  \n                              9.247                               -2.846  \n                  race_7catNH Other  \n                             15.916  \n\nDegrees of Freedom: 3139 Total (i.e. Null);  93 Residual\n  (59 observations deleted due to missingness)\nNull Deviance:      11750000 \nResidual Deviance: 11650000     AIC: 35910"
   },
   {
-    "objectID": "01-replicate-weights/replicate-weights.html#r-4",
-    "href": "01-replicate-weights/replicate-weights.html#r-4",
+    "objectID": "01-replicate-weights/replicate-weights.html#r-group-means",
+    "href": "01-replicate-weights/replicate-weights.html#r-group-means",
     "title": "Replicate Weights",
-    "section": "R",
-    "text": "R\n\nlibrary(srvyr)\n\nsurvey_object %&gt;% \n  as_survey() %&gt;% \n  group_by(race_7cat) %&gt;% \n  summarise(survey_mean(episode_length, na.rm = TRUE))\n\n# A tibble: 8 × 3\n  race_7cat                   coef `_se`\n  &lt;fct&gt;                      &lt;dbl&gt; &lt;dbl&gt;\n1 Latinx/Hispanic/Indigenous  40.4  2.50\n2 NH White                    49.5  3.56\n3 NH Black                    37.5  3.03\n4 NH AAPI                     56.5  6.98\n5 NH Native American/Alaskan  49.6  5.63\n6 NH Multiracial              37.5  2.23\n7 NH Other                    56.3 15.3 \n8 &lt;NA&gt;                        34.2  5.59"
+    "section": "R: Group Means",
+    "text": "R: Group Means\n\nlibrary(srvyr)\n\nsurvey_object %&gt;% \n  as_survey() %&gt;% \n  group_by(race_7cat) %&gt;% \n  summarise(survey_mean(episode_length, na.rm = TRUE))\n\n# A tibble: 8 × 3\n  race_7cat                   coef `_se`\n  &lt;fct&gt;                      &lt;dbl&gt; &lt;dbl&gt;\n1 Latinx/Hispanic/Indigenous  40.4  2.50\n2 NH White                    49.5  3.56\n3 NH Black                    37.5  3.03\n4 NH AAPI                     56.5  6.98\n5 NH Native American/Alaskan  49.6  5.63\n6 NH Multiracial              37.5  2.23\n7 NH Other                    56.3 15.3 \n8 &lt;NA&gt;                        34.2  5.59"
   },
   {
-    "objectID": "01-replicate-weights/replicate-weights.html#stata",
-    "href": "01-replicate-weights/replicate-weights.html#stata",
+    "objectID": "01-replicate-weights/replicate-weights.html#stata-setup",
+    "href": "01-replicate-weights/replicate-weights.html#stata-setup",
     "title": "Replicate Weights",
-    "section": "Stata",
-    "text": "Stata\nuse \"${bhhi_shared_drive}/statewide_survey_processed_data/latest/statewide_survey_processed.dta\"\n\nkeep if survey_count == 1\n\nsvyset _n [pweight=academic_weight], ///\n  bsrweight(academic_rep_weight*) ///\n  vce(bootstrap) ///\n  mse\n Sampling weights: academic_weight\n              VCE: bootstrap\n              MSE: on\nBootstrap weights: academic_rep_weight_1 .. academic_rep_weight_100\n      Single unit: missing\n         Strata 1: &lt;one&gt;\n  Sampling unit 1: &lt;observations&gt;\n            FPC 1: &lt;zero&gt;"
+    "section": "Stata: Setup",
+    "text": "Stata: Setup\nuse \"${bhhi_shared_drive}/statewide_survey_processed_data/latest/statewide_survey_processed.dta\"\n\nkeep if survey_count == 1\n\nsvyset _n [pweight=academic_weight], ///\n  bsrweight(academic_rep_weight*) ///\n  vce(bootstrap) ///\n  mse\n Sampling weights: academic_weight\n              VCE: bootstrap\n              MSE: on\nBootstrap weights: academic_rep_weight_1 .. academic_rep_weight_100\n      Single unit: missing\n         Strata 1: &lt;one&gt;\n  Sampling unit 1: &lt;observations&gt;\n            FPC 1: &lt;zero&gt;"
   },
   {
-    "objectID": "01-replicate-weights/replicate-weights.html#stata-1",
-    "href": "01-replicate-weights/replicate-weights.html#stata-1",
+    "objectID": "01-replicate-weights/replicate-weights.html#stata-regression",
+    "href": "01-replicate-weights/replicate-weights.html#stata-regression",
     "title": "Replicate Weights",
-    "section": "Stata",
-    "text": "Stata\nsvy bootstrap : reg episode_length i.race_7cat\n(running regress on estimation sample)\n\nBootstrap replications (100)\n----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 \n..................................................    50\n..................................................   100\n\nSurvey: Linear regression                         Number of obs   =      3,140\n                                                  Population size = 115,572.49\n                                                  Replications    =        100\n                                                  Wald chi2(6)    =      17.75\n                                                  Prob &gt; chi2     =     0.0069\n                                                  R-squared       =     0.0078\n\n---------------------------------------------------------------------------------------------\n                            |   Observed   Bstrap *\n             episode_length | coefficient  std. err.      z    P&gt;|z|     [95% conf. interval]\n----------------------------+----------------------------------------------------------------\n                  race_7cat |\n                  NH White  |   9.157548   4.801016     1.91   0.056    -.2522703    18.56737\n                  NH Black  |   -2.81859    4.02318    -0.70   0.484    -10.70388    5.066699\n                   NH AAPI  |   16.09569   7.197665     2.24   0.025     1.988528    30.20286\nNH Native American/Alaskan  |   9.246603   5.991962     1.54   0.123    -2.497426    20.99063\n            NH Multiracial  |  -2.846081   2.898077    -0.98   0.326    -8.526207    2.834045\n                  NH Other  |   15.91599    16.3178     0.98   0.329    -16.06631    47.89828\n                            |\n                      _cons |   40.36602   2.482923    16.26   0.000     35.49958    45.23246\n---------------------------------------------------------------------------------------------"
+    "section": "Stata: Regression",
+    "text": "Stata: Regression\nsvy bootstrap : reg episode_length i.race_7cat\n(running regress on estimation sample)\n\nBootstrap replications (100)\n----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 \n..................................................    50\n..................................................   100\n\nSurvey: Linear regression                         Number of obs   =      3,140\n                                                  Population size = 115,572.49\n                                                  Replications    =        100\n                                                  Wald chi2(6)    =      17.75\n                                                  Prob &gt; chi2     =     0.0069\n                                                  R-squared       =     0.0078\n\n---------------------------------------------------------------------------------------------\n                            |   Observed   Bstrap *\n             episode_length | coefficient  std. err.      z    P&gt;|z|     [95% conf. interval]\n----------------------------+----------------------------------------------------------------\n                  race_7cat |\n                  NH White  |   9.157548   4.801016     1.91   0.056    -.2522703    18.56737\n                  NH Black  |   -2.81859    4.02318    -0.70   0.484    -10.70388    5.066699\n                   NH AAPI  |   16.09569   7.197665     2.24   0.025     1.988528    30.20286\nNH Native American/Alaskan  |   9.246603   5.991962     1.54   0.123    -2.497426    20.99063\n            NH Multiracial  |  -2.846081   2.898077    -0.98   0.326    -8.526207    2.834045\n                  NH Other  |   15.91599    16.3178     0.98   0.329    -16.06631    47.89828\n                            |\n                      _cons |   40.36602   2.482923    16.26   0.000     35.49958    45.23246\n---------------------------------------------------------------------------------------------"
   },
   {
-    "objectID": "01-replicate-weights/replicate-weights.html#stata-2",
-    "href": "01-replicate-weights/replicate-weights.html#stata-2",
+    "objectID": "01-replicate-weights/replicate-weights.html#stata-group-means",
+    "href": "01-replicate-weights/replicate-weights.html#stata-group-means",
     "title": "Replicate Weights",
-    "section": "Stata",
-    "text": "Stata\nsvy bootstrap : mean episode_length, over(race_7cat)\n(running mean on estimation sample)\n\nBootstrap replications (100)\n----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 \n..................................................    50\n..................................................   100\n\nSurvey: Mean estimation                          Number of obs   =      3,140\n                                                 Population size = 115,572.49\n                                                 Replications    =        100\n\n-----------------------------------------------------------------------------\n                            |   Observed   Bstrap *\n                            |       mean   std. err.     [95% conf. interval]\n----------------------------+------------------------------------------------\n c.episode_length@race_7cat |\nLatinx/Hispanic/Indigenous  |   40.36602   2.482923      35.49958    45.23246\n                  NH White  |   49.52357   3.537419      42.59036    56.45678\n                  NH Black  |   37.54743   3.010734       31.6465    43.44836\n                   NH AAPI  |   56.46171    6.94129      42.85703    70.06639\nNH Native American/Alaskan  |   49.61262   5.600275      38.63629    60.58896\n            NH Multiracial  |   37.51994   2.218442      33.17188    41.86801\n                  NH Other  |   56.28201   15.18007      26.52963    86.03439\n-----------------------------------------------------------------------------"
+    "section": "Stata: Group Means",
+    "text": "Stata: Group Means\nsvy bootstrap : mean episode_length, over(race_7cat)\n(running mean on estimation sample)\n\nBootstrap replications (100)\n----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 \n..................................................    50\n..................................................   100\n\nSurvey: Mean estimation                          Number of obs   =      3,140\n                                                 Population size = 115,572.49\n                                                 Replications    =        100\n\n-----------------------------------------------------------------------------\n                            |   Observed   Bstrap *\n                            |       mean   std. err.     [95% conf. interval]\n----------------------------+------------------------------------------------\n c.episode_length@race_7cat |\nLatinx/Hispanic/Indigenous  |   40.36602   2.482923      35.49958    45.23246\n                  NH White  |   49.52357   3.537419      42.59036    56.45678\n                  NH Black  |   37.54743   3.010734       31.6465    43.44836\n                   NH AAPI  |   56.46171    6.94129      42.85703    70.06639\nNH Native American/Alaskan  |   49.61262   5.600275      38.63629    60.58896\n            NH Multiracial  |   37.51994   2.218442      33.17188    41.86801\n                  NH Other  |   56.28201   15.18007      26.52963    86.03439\n-----------------------------------------------------------------------------"
+  },
+  {
+    "objectID": "01-replicate-weights/replicate-weights.html#additional-resources",
+    "href": "01-replicate-weights/replicate-weights.html#additional-resources",
+    "title": "Replicate Weights",
+    "section": "Additional Resources",
+    "text": "Additional Resources\n\nStata Manual: Bootstrap Replicate Weights\nR survey Package\nIPUMS: Replicate Weights in the ACS\nSharon Lohr: Sampling Design and Analysis\nR svrep Package\nBeaumont and Emond (2022): A Bootstrap Variance Estimation Method for Multistage Sampling and Two-Phase Sampling When Poisson Sampling Is Used at the Second Phase\nRao, Wu, Yue (1992): Some Recent Work on Resampling Methods for Complex Surveys\n\n\n\n\nBHHI Methods Meetup Session 1: Replicate Weights"
   },
   {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Methods Meetup",
     "section": "",
-    "text": "Replicate Weights\n\n\nSession 1 - Methods Meetup\n\n\n\n\n\n\n\n\n\nAug 16, 2023\n\n\nEve Perry\n\n\n\n\n\n\nNo matching items"
+    "text": "Replicate Weights\n\n\nMethods Meetup: Session 1\n\n\n\n\n\n\n\n\n\nAug 17, 2023\n\n\nEve Perry\n\n\n\n\n\n\nNo matching items"
   }
 ]
