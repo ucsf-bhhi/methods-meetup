@@ -1,10 +1,11 @@
 project:
   title: "methods-meetup"
-  output-dir: docs
+  type: website
 
 format:
   revealjs:
     theme: [default, theme.scss]
+    logo: bhhi-logo.png
     code-overflow: wrap
     code-line-numbers: false
     highlight-style: a11y

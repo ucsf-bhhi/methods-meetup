@@ -1,0 +1,8 @@
+---
+title: Methods Meetup
+listing: default
+format: 
+  bhhi-quarto-html:
+    code-tools:
+        source: false
+---

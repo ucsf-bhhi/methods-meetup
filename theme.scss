@@ -13,3 +13,9 @@ $font-family-monospace: "Fira Code", SFMono-Regular, Menlo, Monaco, Consolas, "L
 $body-color: black !default;
 $presentation-heading-color: #052049 !default;
 $code-block-bg: #E2F4FC !default;
+
+/*-- scss:rules --*/
+
+.reveal img.slide-logo {
+  max-height: 5rem;
+}

@@ -2,7 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-docs/
+_site/
 **/*_cache/
 **/*_files/
 /.quarto/
