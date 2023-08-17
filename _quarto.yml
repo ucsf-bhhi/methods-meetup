@@ -2,6 +2,9 @@ project:
   title: "methods-meetup"
   type: website
 
+execute:
+  freeze: auto
+
 format:
   revealjs:
     theme: [default, theme.scss]
