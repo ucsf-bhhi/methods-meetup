@@ -5,6 +5,7 @@ project:
 format:
   revealjs:
     theme: [default, theme.scss]
+    date-format: long
     logo: bhhi-logo.png
     code-overflow: wrap
     code-line-numbers: false
