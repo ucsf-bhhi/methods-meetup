@@ -2,7 +2,7 @@
 title: "Replicate Weights"
 subtitle: "Methods Meetup: Session 1"
 author: "Eve Perry"
-date: today
+date: 2023-09-05
 format: 
   revealjs:
     footer: "BHHI Methods Meetup Session 1: Replicate Weights"
