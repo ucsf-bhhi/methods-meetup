@@ -1,0 +1,426 @@
+---
+title: "Replicate Weights"
+subtitle: "Methods Meetup: Session 1"
+author: "Eve Perry"
+date: 2023-09-05
+format: 
+  revealjs:
+    footer: "BHHI Methods Meetup Session 1: Replicate Weights"
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+set.seed(510)
+```
+
+## Outline
+
+-   Complex sampling recap
+-   What are replicate weights?
+-   Creating our replicate weights
+-   Using replicate weights in analyses
+
+# Complex Sampling Recap
+
+## Sampling Designs {.smaller}
+
+::: {.r-stack}
+
+::: {.fragment .fade-out}
+
+::: columns
+::: column
+### Simple Random
+
+-   Only 1 level
+-   Each observation has same chance of selection
+-   Sample is often very small relative to population
+:::
+
+::: column
+### CASPEH
+
+-   3 levels: county, venue, individual
+-   All sampled without replacement
+-   Counties and venues sampled with unequal probability
+-   Individuals sampled with equal probability
+-   Large fractions of populations sampled
+:::
+:::
+
+:::
+
+::: {.fragment .fade-in-then-out}
+
+::: columns
+::: column
+### Simple Random
+
+```{r}
+#| echo: false
+#| fig-height: 9
+srs_sampled = tibble(x = runif(100), y = runif(100))
+srs_unsampled = tibble(x = runif(1000), y = runif(1000))
+
+ggplot() +
+  geom_point(aes(x = x, y = y), data = srs_sampled) +
+  geom_point(aes(x = x, y = y), data = srs_unsampled, alpha = 0.1) +
+  coord_fixed(xlim = 0:1, ylim = 0:1, expand = FALSE) +
+  theme_void() +
+  theme(panel.border = element_rect(fill = NA, color = "black"))
+```
+:::
+
+::: column
+### CASPEH
+
+```{r}
+#| echo: false
+#| fig-height: 9
+sampled = tibble(
+  x = c(
+    runif(10, min = 0, max = 0.2),
+    runif(5, min = 0.2, max = 0.3),
+    runif(7, min = 0.1, max = 0.3),
+    runif(9, min = 0.3, max = 0.5),
+    runif(8, min = 0.3, max = 0.5),
+    runif(8, min = 0.5, max = 0.7),
+    runif(8, min = 0.5, max = 0.7),
+    runif(4, min = 0.7, max = 0.8),
+    runif(5, min = 0.7, max = 0.8),
+    runif(5, min = 0.9, max = 1),
+    runif(7, min = 0.9, max = 1)
+  ),
+  y = c(
+    runif(10, min = 0, max = 0.3),
+    runif(5, min = 0.3, max = 0.4),
+    runif(7, min = 0.8, max = 0.9),
+    runif(9, min = 0.4, max = 0.6),
+    runif(8, min = 0.6, max = 0.8),
+    runif(8, min = 0.4, max = 0.6),
+    runif(8, min = 0.6, max = 0.8),
+    runif(4, min = 0.4, max = 0.6),
+    runif(5, min = 0.6, max = 0.8),
+    runif(5, min = 0, max = 0.2),
+    runif(7, min = 0.2, max = 0.4)
+  )
+)
+  
+unsampled = tibble(
+  x = c(
+    runif(4, min = 0, max = 0.2),
+    runif(0, min = 0.2, max = 0.3),
+    runif(8, min = 0.1, max = 0.3),
+    runif(3, min = 0.3, max = 0.5),
+    runif(5, min = 0.3, max = 0.5),
+    runif(2, min = 0.5, max = 0.7),
+    runif(9, min = 0.5, max = 0.7),
+    runif(2, min = 0.7, max = 0.8),
+    runif(0, min = 0.7, max = 0.8),
+    runif(0, min = 0.9, max = 1),
+    runif(3, min = 0.9, max = 1)
+  ),
+  y = c(
+    runif(4, min = 0, max = 0.3),
+    runif(0, min = 0.3, max = 0.4),
+    runif(8, min = 0.8, max = 0.9),
+    runif(3, min = 0.4, max = 0.6),
+    runif(5, min = 0.6, max = 0.8),
+    runif(2, min = 0.4, max = 0.6),
+    runif(9, min = 0.6, max = 0.8),
+    runif(2, min = 0.4, max = 0.6),
+    runif(0, min = 0.6, max = 0.8),
+    runif(0, min = 0, max = 0.2),
+    runif(3, min = 0.2, max = 0.4)
+  )
+)
+
+ggplot() +
+  geom_point(aes(x = x, y = y), data = sampled) +
+  geom_point(aes(x = x, y = y), data = unsampled, alpha = 0.1) +
+  geom_hline(yintercept = 0.4, color = "blue") +
+  geom_hline(yintercept = 0.8, color = "blue") +
+  geom_vline(xintercept = 0.3, color = "blue") +
+  geom_vline(xintercept = 0.8, color = "blue") +
+  geom_segment(aes(x = 0.2, xend = 0.2, y = 0, yend = 0.4), color = "red") +
+  geom_segment(aes(x = 0, xend = 0.3, y = 0.3, yend = 0.3), color = "red") +
+  geom_segment(aes(x = 0, xend = 0.3, y = 0.95, yend = 0.95), color = "red") +
+  geom_segment(aes(x = 0.1, xend = 0.1, y = 0.8, yend = 1), color = "red") +
+  geom_segment(aes(x = 0.3, xend = 0.8, y = 0.6, yend = 0.6), color = "red") +
+  geom_segment(aes(x = 0.5, xend = 0.5, y = 0.4, yend = 0.8), color = "red") +
+  geom_segment(aes(x = 0.7, xend = 0.7, y = 0.4, yend = 0.8), color = "red") +
+  geom_segment(aes(x = 0.8, xend = 1, y = 0.2, yend = 0.2), color = "red") +
+  geom_segment(aes(x = 0.875, xend = 0.875, y = 0, yend = 0.4), color = "red") +
+  coord_fixed(xlim = 0:1, ylim = 0:1, expand = FALSE) +
+  theme_void() +
+  theme(panel.border = element_rect(fill = NA, color = "black"))
+```
+:::
+:::
+
+:::
+
+:::
+
+## Standard Error Formulas
+
+::: columns
+::: column
+### Simple Random
+
+$$ 
+\sqrt{(1-\frac{n}{N})\frac{variance}{n}}
+$$
+:::
+
+::: column
+### CASPEH
+
+![](img/multistage-variance-equations.png)
+:::
+::::
+
+# What Are Replicate Weights?
+
+## Concepts
+
+* Compute standard errors when formulas are too complicated or inappropriate
+* Use the sample as if it is itself a population
+* Incorporate sampling design into the calculation of the weights
+* Create multiple versions (replicates) of the sample and use variability in those versions for standard errors
+* Come in a variety of forms: bootstrap, balanced repeated replication (BRR), jackknife
+
+## Bootstrap Resampling
+
+* Draw a new sample from the original sample with replacement using the actual selection probabilities
+* Follow the same sampling structure so it's incorporated into the replicates
+* Make an adjustment to the main weights so the replicate resembles the full sample
+* Repeat 100 times
+
+# Creating Our Replicate Weights
+
+## Selection Probabilities {.smaller}
+
+:::: columns
+
+::: column
+### Counties & Venues
+* Sampled without replacement and unequal probabilities
+* Simulate the sampling procedure many (10,000-100,000) times to get the probability a given county and venue are selected
+
+![](img/placer-venue-probabilities.png){width=80%}
+:::
+
+::: column
+### Individuals
+* Simple random sample at venue
+* Adjustments for individual non-response
+* Adjustments for RDS inclusion
+:::
+
+::::
+
+## R: Packages
+
+* Relies on [`survey`](https://r-survey.r-forge.r-project.org/survey/) and [`svrep`](https://bschneidr.github.io/svrep/) packages
+  * `survey` is the R workhorse for survey data analysis
+  * `svrep` is the only package which supports multi-stage, unequal probability sampling without replacement and large fractions of population
+* Code available on the [on-prem (git.ucsf.edu) GitHub](https://git.ucsf.edu/Benioff-Homelessness-Housing-Initiative/statewide-survey-data-processing/blob/main/R/replicate_weights.R)
+
+## R: Code {.smaller}
+
+```r
+design_object <- svydesign(
+  ids = ~ county + venue_2 + record_id,
+  probs = ~ county_probability + venue_probability + final_individual_probability,
+  fpc = ~ county_probability + venue_probability + final_individual_probability,
+  pps = "brewer",
+  data = design_data
+)
+
+options(list(survey.lonely.psu = "adjust", survey.replicates.mse = TRUE))
+replicate_weights_design <- as_bootstrap_design(
+  design = design_object,
+  replicates = 100,
+  type = "Rao-Wu-Yue-Beaumont",
+  mse = TRUE,
+  samp_method_by_stage = c("PPSWOR", "PPSWOR", "SRSWOR")
+)
+```
+
+# Using Our Replicate Weights
+
+## Conceptual Recap
+
+* Estimate statistic of interest using main weights and each set of replicate weights
+* Standard error comes from the variability of the replicate estimates with respect to the main weight estimate
+
+## R: Data Setup
+
+```{r}
+#| cache: true
+#| echo: true
+library(bhhitools)
+library(dplyr)
+library(readr)
+library(haven)
+
+surveys = bhhi_shared_drive(
+  "statewide_survey_processed_data/latest/statewide_survey_processed.rds"
+) %>% 
+  read_rds() %>% 
+  filter(zap_labels(survey_count) == 1) %>% 
+  mutate(across(where(is.labelled), as_factor))
+```
+
+## R: Survey Setup
+
+```{r}
+#| echo: true
+library(survey)
+
+survey_object = svrepdesign(
+  ids = ~ record_id,
+  weights = ~ academic_weight,
+  repweights = "academic_rep_weight*",
+  type = "bootstrap",
+  mse = TRUE,
+  data = surveys
+)
+```
+
+## R: Chi-square Test
+
+```{r}
+#| echo: true
+svychisq(~ physicalvio_thisep_recode + race_7cat, survey_object)
+```
+
+## R: Regression {.smaller}
+
+```{r}
+#| echo: true
+#| cache: true
+svyglm(episode_length ~ race_7cat, survey_object)
+```
+
+## R: Group Means
+
+```{r}
+#| echo: true
+library(srvyr)
+
+survey_object %>% 
+  as_survey() %>% 
+  group_by(race_7cat) %>% 
+  summarise(survey_mean(episode_length, na.rm = TRUE))
+```
+
+## Stata: Setup {.smaller}
+
+```stata 
+use "${bhhi_shared_drive}/statewide_survey_processed_data/latest/statewide_survey_processed.dta"
+
+keep if survey_count == 1
+
+svyset _n [pweight=academic_weight], ///
+  bsrweight(academic_rep_weight*) ///
+  vce(bootstrap) ///
+  mse
+```
+
+```asis
+ Sampling weights: academic_weight
+              VCE: bootstrap
+              MSE: on
+Bootstrap weights: academic_rep_weight_1 .. academic_rep_weight_100
+      Single unit: missing
+         Strata 1: <one>
+  Sampling unit 1: <observations>
+            FPC 1: <zero>
+```
+
+## Stata: Regression  {.smaller}
+
+```stata
+svy bootstrap : reg episode_length i.race_7cat
+```
+
+```{.code-overflow-scroll} 
+(running regress on estimation sample)
+
+Bootstrap replications (100)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+..................................................   100
+
+Survey: Linear regression                         Number of obs   =      3,140
+                                                  Population size = 115,572.49
+                                                  Replications    =        100
+                                                  Wald chi2(6)    =      17.75
+                                                  Prob > chi2     =     0.0069
+                                                  R-squared       =     0.0078
+
+---------------------------------------------------------------------------------------------
+                            |   Observed   Bstrap *
+             episode_length | coefficient  std. err.      z    P>|z|     [95% conf. interval]
+----------------------------+----------------------------------------------------------------
+                  race_7cat |
+                  NH White  |   9.157548   4.801016     1.91   0.056    -.2522703    18.56737
+                  NH Black  |   -2.81859    4.02318    -0.70   0.484    -10.70388    5.066699
+                   NH AAPI  |   16.09569   7.197665     2.24   0.025     1.988528    30.20286
+NH Native American/Alaskan  |   9.246603   5.991962     1.54   0.123    -2.497426    20.99063
+            NH Multiracial  |  -2.846081   2.898077    -0.98   0.326    -8.526207    2.834045
+                  NH Other  |   15.91599    16.3178     0.98   0.329    -16.06631    47.89828
+                            |
+                      _cons |   40.36602   2.482923    16.26   0.000     35.49958    45.23246
+---------------------------------------------------------------------------------------------
+```
+
+## Stata: Group Means {.smaller}
+
+```stata
+svy bootstrap : mean episode_length, over(race_7cat)
+```
+
+```asis
+(running mean on estimation sample)
+
+Bootstrap replications (100)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+..................................................   100
+
+Survey: Mean estimation                          Number of obs   =      3,140
+                                                 Population size = 115,572.49
+                                                 Replications    =        100
+
+-----------------------------------------------------------------------------
+                            |   Observed   Bstrap *
+                            |       mean   std. err.     [95% conf. interval]
+----------------------------+------------------------------------------------
+ c.episode_length@race_7cat |
+Latinx/Hispanic/Indigenous  |   40.36602   2.482923      35.49958    45.23246
+                  NH White  |   49.52357   3.537419      42.59036    56.45678
+                  NH Black  |   37.54743   3.010734       31.6465    43.44836
+                   NH AAPI  |   56.46171    6.94129      42.85703    70.06639
+NH Native American/Alaskan  |   49.61262   5.600275      38.63629    60.58896
+            NH Multiracial  |   37.51994   2.218442      33.17188    41.86801
+                  NH Other  |   56.28201   15.18007      26.52963    86.03439
+-----------------------------------------------------------------------------
+```
+
+# Questions and Discussion
+
+## Additional Resources {visibility="uncounted" .smaller}
+
+* [Stata Manual: Bootstrap Replicate Weights](https://www.stata.com/manuals/svysvybootstrap.pdf)
+* [R `survey` Package](https://r-survey.r-forge.r-project.org/survey/example-svrepdesign1.html)
+* [IPUMS: Replicate Weights in the ACS](https://usa.ipums.org/usa/repwt.shtml)
+* [Sharon Lohr: Sampling Design and Analysis](https://galoisian.files.wordpress.com/2018/11/sharon-l-lohr-sampling_-design-and-analysis-1999-duxbury-press.pdf)
+* [R `svrep` Package](https://bschneidr.github.io/svrep/)
+* [Beaumont and Emond (2022): A Bootstrap Variance Estimation Method for Multistage Sampling and Two-Phase Sampling When Poisson Sampling Is Used at the Second Phase](http://mdpi.com/2571-905X/5/2/19)
+* [Rao, Wu, Yue (1992): Some Recent Work on Resampling Methods for Complex Surveys](https://www150.statcan.gc.ca/n1/en/pub/12-001-x/1992002/article/14486-eng.pdf?st=HofYV8gm)
+

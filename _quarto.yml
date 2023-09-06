@@ -2,9 +2,6 @@ project:
   title: "methods-meetup"
   type: website
 
-execute:
-  freeze: auto
-
 format:
   revealjs:
     theme: [default, theme.scss]
@@ -17,5 +14,3 @@ format:
       opts_chunk:
         dev: ragg_png
         dpi: 144
-
-
